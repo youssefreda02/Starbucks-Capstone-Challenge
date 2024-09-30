@@ -325,7 +325,7 @@ def prepare_data(profile_clean, portfolio_clean,transcript_clean):
 
     # Update the labels in the original dataset
     dataset_wo2.loc[label_updates.keys(), 'label'] = dataset_wo2.loc[label_updates.keys()].index.map(label_updates)
-    df_h = dataset_wo2.merge(portfolio_clean, left_on= ['reward','difficulty','duration','channel_social','channel_web'], right_on =['reward','difficulty','duration','channel_social','channel_web'] ).drop(['channel_email_y', 'channel_mobile_y'], axis = 1)
+    df_h = dataset_wo2.merge(portfolio_clean, left_on= ['reward','difficulty','duration','channel_social','channel_web'], right_on =['reward','difficulty','duration','channel_social','channel_web'] )
     
     # Calculate response rates
     bins = [17, 24, 34, 44, 54, 64, 74, 100]
