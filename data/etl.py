@@ -25,7 +25,35 @@ def load_data(portfolio_filepath, profile_filepath, transcript_filepath):
 
 
 def clean_data(portfolio, profile, transcript):
-    
+    """
+        Clean and preprocess the portfolio, profile, and transcript datasets for further analysis.
+
+        This function performs a series of cleaning steps on the input datasets, including:
+        - Removing missing values and outliers from the profile data.
+        - Dropping corresponding events in the transcript where the associated profile is missing.
+        - Flattening nested columns in the transcript data and normalizing offer information.
+        - Handling informational offers by creating inferred "offer completed" events.
+        - Merging counts of completed offers back into the portfolio data.
+        - Expanding the `channels` column into separate columns for each channel.
+        - Counting and merging user interaction metrics with the profile data.
+
+        Parameters:
+        - portfolio (pd.DataFrame): The portfolio dataset containing details of offers, including type, duration, and difficulty.
+        - profile (pd.DataFrame): The profile dataset containing user demographic information such as age and gender.
+        - transcript (pd.DataFrame): The transcript dataset containing records of events related to offers and transactions.
+
+        Returns:
+        - tuple: A tuple containing cleaned and processed versions of the profile, portfolio, and transcript datasets.
+
+        Steps:
+        1. Remove users with missing gender from the profile dataset, and filter related events from the transcript.
+        2. Drop outliers from the profile dataset based on the age attribute.
+        3. Normalize and concatenate offer data from nested JSON in the transcript.
+        4. Infer "offer completed" events for informational offers if viewed and transactions are made within the offer duration.
+        5. Merge offer completion counts with the portfolio, expanding the channels column.
+        6. Count and merge user-specific event interactions (received, viewed, completed) into the profile dataset.
+
+    """
     
     ids_na = profile[profile['gender'].isna()]['id']
     # First drop na
@@ -160,6 +188,34 @@ def clean_data(portfolio, profile, transcript):
 
 
 def prepare_data(profile_clean, portfolio_clean,transcript_clean):
+    """
+        Prepare the cleaned datasets for further modeling by combining user profiles, offers, and user interactions.
+
+        This function takes the cleaned versions of the profile, portfolio, and transcript datasets and:
+        - Creates a feature set and corresponding labels for each user-offer combination.
+        - Encodes categorical variables such as gender and channels.
+        - Simplifies the resulting dataset by dropping unnecessary columns.
+        - Removes duplicate rows and handles duplicate labeling to ensure consistency.
+        - Merges the portfolio data to enrich the dataset and calculates response rates for different user segments.
+
+        Parameters:
+        - profile_clean (pd.DataFrame): Cleaned profile dataset containing user demographic data.
+        - portfolio_clean (pd.DataFrame): Cleaned portfolio dataset containing offer details and encoded channel information.
+        - transcript_clean (pd.DataFrame): Cleaned transcript dataset containing user interaction events.
+
+        Returns:
+        - pd.DataFrame: A merged dataset containing user profiles, offers, and calculated response rates.
+
+        Steps:
+        1. Extract relevant columns from the cleaned datasets and rename them for easier merging.
+        2. Loop through users and offers to create feature rows, including user demographics, offer properties, and interaction labels.
+        3. One-hot encode categorical variables like gender and offer channels, and simplify columns by dropping redundant features.
+        4. Drop duplicate feature rows, group them, and update labels based on the most common value within each group.
+        5. Merge the enriched portfolio dataset with the final user-offer dataset.
+        6. Calculate response rates by age group and gender, providing insights into how different segments respond to offers.
+
+    """
+    
     # Step 1: Prepare the dataframes for merging
     profile_df = profile_clean[['id', 'age', 'gender', 'income']].rename(columns={'id': 'user_id'})
     portfolio_df = portfolio_clean[['id', 'reward', 'difficulty', 'duration', 
@@ -328,12 +384,12 @@ def main():
         print('Cleaned data saved to the CSV file!')
     
     else:
-        print('Please provide the filepaths of the messages and categories '\
-              'datasets as the first and second argument respectively, as '\
-              'well as the filepath of the database to save the cleaned data '\
-              'to as the third argument. \n\nExample: python process_data.py '\
-              'disaster_messages.csv disaster_categories.csv '\
-              'DisasterResponse.db')
+        print('Please provide the filepaths of the portfolio,  profile , and transcript'\
+              'datasets as the first, second, and third argument respectively, as '\
+              'well as the filepath of the csv to save the cleaned data '\
+              'to as the forth argument. \n\nExample: python data/etl.py '\
+              'data/portfolio.json data/profile.json  data/transcript.json '\
+              'ata/offer_recommendations.csv')
 
 
 if __name__ == '__main__':

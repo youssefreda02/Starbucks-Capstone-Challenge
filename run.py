@@ -25,7 +25,7 @@ st.markdown(
 @st.cache_data  # Cache the data to improve performance
 def load_data():
     # Choose the appropriate loading method based on your saved format
-    df = pd.read_csv('../data/offer_recommendations.csv')
+    df = pd.read_csv('/data/offer_recommendations.csv')
     return df
 
 offer_recommendations = load_data()
